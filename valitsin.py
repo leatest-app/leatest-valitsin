@@ -20,7 +20,7 @@ t = {
         "dist_3m": "Kaukonäkö (3 m)",
         "near_40cm": "Lähinäkö (40 cm)",
         "rec_hdr": "Suositus:",
-        "buy_btn": "Katso tuote kaupassa",
+        "buy_btn": "Tilaa tuote kaupasta 🛒",
         "code_label": "Tuotekoodi:",
         "exp_hdr": "ℹ️ Ohjeita testin valintaan",
         "exp_txt": "Rivitesti on vaativampi. Jos lapsi hukkaa rivin, käytä kehystettyjä yksittäissymboleita. Vauvoille käytetään aina hila-testejä (Grating)."
@@ -38,7 +38,7 @@ t = {
         "dist_3m": "Avståndssyn (3 m)",
         "near_40cm": "Närsyn (40 cm)",
         "rec_hdr": "Rekommendation:",
-        "buy_btn": "Visa produkten i butiken",
+        "buy_btn": "Beställ produkten i butiken 🛒",
         "code_label": "Produktkod:",
         "exp_hdr": "ℹ️ Instruktioner för val av test",
         "exp_txt": "Radtest är mer krävande. Om barnet tappar raden, använd inramade enskilda symboler."
@@ -56,7 +56,7 @@ t = {
         "dist_3m": "Distance vision (3 m)",
         "near_40cm": "Near vision (40 cm)",
         "rec_hdr": "Recommendation:",
-        "buy_btn": "View product in store",
+        "buy_btn": "Order product from store 🛒",
         "code_label": "Product code:",
         "exp_hdr": "ℹ️ Tips for selection",
         "exp_txt": "Line tests are more demanding. If the child loses their place, use framed single symbols."
@@ -82,8 +82,8 @@ else:
 
 tapa = st.sidebar.radio(txt["method_label"], txt["method_opts"])
 
-# --- APUFUNKTIO ---
-def nayta_tuote(nimi, koodi, kuvaus, linkki_handle, kuva_url):
+# --- APUFUNKTIO TUOTTEEN NÄYTTÄMISEEN ---
+def nayta_tuote(nimi, koodi, kuvaus, tuote_url, kuva_url):
     c1, c2 = st.columns([1, 2])
     with c1:
         st.image(kuva_url, use_container_width=True)
@@ -91,52 +91,54 @@ def nayta_tuote(nimi, koodi, kuvaus, linkki_handle, kuva_url):
         st.success(f"### {nimi}")
         st.write(f"**{txt['code_label']}** #{koodi}")
         st.write(kuvaus)
-        url = f"https://leatest.fi/products/{linkki_handle}"
-        st.link_button(txt["buy_btn"], url)
+        st.link_button(txt["buy_btn"], tuote_url)
 
 st.divider()
 st.subheader(f"{txt['rec_hdr']} {ika} ({etaisyys})")
 
-# --- SUOSITUKSET ---
-# Huom: Päivitä kuva_url ja linkki_handle kauppasi mukaan
+# --- SUOSITUSLOGIIKKA (Päivitetty CSV-datalla) ---
+
 if ika == "0-6 kk":
     nayta_tuote(
-        "LEA GRATINGS® – näöntarkkuustesti – mela-setti", "253300",
-        "Vauvojen ja kehitysvammaisten näöntarkkuuden mittaamiseen hila-testillä.",
-        "lea-gratings-naontarkkuustesti-mela-setti", # KORJATTU LINKKI
-        "https://leatest.fi/cdn/shop/files/253300_1_800x.jpg" # Esimerkkikuva
+        "LEA GRATINGS® – hila-testi", "253300",
+        "Vauvojen ja kehitysvammaisten näöntarkkuuden mittaamiseen hila-testillä. Seurataan lapsen katselusuunnan kohdistumista raitakuvioon.",
+        "https://leatest.fi/products/goodlite-253300-paddles-lea-gratings-a-preferential-looking-test-set",
+        "https://leatest.fi/cdn/shop/files/good-lite-vision-testing-aids-paddles-lea-gratings-a-preferential-looking-test-set-paddles-lea-gratings-a-preferential-looking-test-253300-1197849552.jpg?v=1771344288&width=823"
     )
 
 elif ika == "6-12 kk":
     nayta_tuote(
         "Hiding Heidi – matalan kontrastin testi", "253500",
-        "Arvioi viestintäetäisyyden ja kasvojen tunnistamisen matalalla kontrastilla.",
-        "hiding-heidi-matalan-kontrastin-testi",
-        "https://leatest.fi/cdn/shop/files/253500_1_800x.jpg"
+        "Arvioi viestintäetäisyyden ja kasvojen tunnistamisen matalalla kontrastilla. Elintärkeä viestinnän kehityksen arviointiin.",
+        "https://leatest.fi/products/goodlite-253500-cards-hiding-heidi-low-contrast-face-test-double-sided",
+        "https://leatest.fi/cdn/shop/files/good-lite-253510-single-sided-hiding-heidi-low-contrast-face-test-253510-31346832310377.jpg?v=1771344291&width=823"
     )
 
 elif ika == "1-2 v":
     nayta_tuote(
         "LEA SYMBOLS® -palapeli", "251600",
-        "Opeta symbolit leikin kautta ennen varsinaista testausta.",
-        "lea-symbols-palapeli",
-        "https://leatest.fi/cdn/shop/files/251600_1_800x.jpg"
+        "Opeta symbolit (ympyrä, neliö, omena, talo) leikin kautta ennen varsinaista testausta. Paras työkalu vastaavuuden harjoitteluun.",
+        "https://leatest.fi/products/goodlite-251600-response-panel-lea-symbols-3-d-puzzle-set",
+        "https://leatest.fi/cdn/shop/files/good-lite-lea-3-d-puzzle-251600-31895201841257.jpg?v=1771344277&width=823"
     )
 
 elif ika == "2.5-3 v":
     if etaisyys == txt["near_40cm"]:
-        nayta_tuote("LEA SYMBOLS® -lähitesti", "250800", "Lähinäön tutkimiseen 40 cm etäisyydeltä.", "lea-symbols-lahitesti", "https://leatest.fi/cdn/shop/files/250800_1_800x.jpg")
+        nayta_tuote("LEA SYMBOLS® -lähitesti johdolla", "250800", "Standardi lähitesti 40 cm etäisyydelle lapsille.", "https://leatest.fi/products/goodlite-250800-cardnear-lea-symbols-near-vision-card-with-cord-16-40cm", "https://leatest.fi/cdn/shop/files/good-lite-co-lea-symbols-near-vision-card-250800-32461354664041.jpg?v=1772825481&width=823")
     else:
-        nayta_tuote("LEA SYMBOLS® -taulu (3 m)", "250250", "10-rivinen taulu kaukoseulontaan.", "lea-symbols-taulu-3m-10-rivia", "https://leatest.fi/cdn/shop/files/250250_1_800x.jpg")
+        nayta_tuote("LEA SYMBOLS® -taulu (3 m, 10 riviä)", "250250", "Yleisin kaukoseulontataulu pienille lapsille (3 m).", "https://leatest.fi/products/goodlite-250250-folding-chart-lea-symbols-10-line-black-back-set-10ft-3m", "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-10-line-distance-charts-250250-31306945167465.jpg?v=1771344268&width=823")
 
 elif ika in ["3-4 v", "4-7 v"]:
-    if tapa == txt["method_opts"][1]: # Yksittäiset symbolit
-        nayta_tuote("LEA SYMBOLS® -yksittäissymbolit (kirja)", "250600", "Kehystetyt symbolit lapsille, joilla on ahtausilmiö (crowding).", "lea-symbols-yksittaissymbolit-testikirja", "https://leatest.fi/cdn/shop/files/250600_1_800x.jpg")
+    if tapa == txt["method_opts"][1]: # Yksittäiset symbolit / Crowding
+        nayta_tuote("LEA SYMBOLS® -yksittäissymbolikirja", "250600", "Kehystetyt yksittäissymbolit lapsille, joilla on ahtausilmiö (crowding).", "https://leatest.fi/products/goodlite-250600-flip-book-lea-symbols-single-symbol-book-set-10ft-3m", "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-single-symbol-book-250600-31306945200233.jpg?v=1771344270&width=823")
     else:
-        koodi = "250250" if ika == "3-4 v" else "250150"
-        handle = "lea-symbols-taulu-3m-10-rivia" if ika == "3-4 v" else "lea-symbols-taulu-3m-15-rivia"
-        nayta_tuote(f"LEA SYMBOLS® -taulu ({koodi})", koodi, "Standardi seulontataulu kaukonäön tutkimiseen.", handle, f"https://leatest.fi/cdn/shop/files/{koodi}_1_800x.jpg")
+        if ika == "3-4 v":
+            nayta_tuote("LEA SYMBOLS® -taulu (3 m, 10 riviä)", "250250", "Standardi seulontataulu kaukonäön tutkimiseen 3 metrin etäisyydeltä.", "https://leatest.fi/products/goodlite-250250-folding-chart-lea-symbols-10-line-black-back-set-10ft-3m", "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-10-line-distance-charts-250250-31306945167465.jpg?v=1771344268&width=823")
+        else:
+            nayta_tuote("LEA SYMBOLS® -taulu (3 m, 15 riviä)", "250150", "Tarkempi seulontataulu vanhemmille lapsille (3 m etäisyys).", "https://leatest.fi/products/goodlite-250150-folding-chart-lea-symbols-15-line-black-back-set-10ft-3m", "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-15-line-distance-chart-250150-31306944938089.jpg?v=1771344265&width=823")
 
 st.divider()
 with st.expander(txt["exp_hdr"]):
     st.write(txt["exp_txt"])
+
+st.caption("Päivitetty logiikka 2026. Kaikki tuotteet alkuperäisiä Lea-testejä. Leatest.fi")

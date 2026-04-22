@@ -1,3 +1,4 @@
+
 import streamlit as st
 
 st.set_page_config(page_title="Lea-testin valitsin", page_icon="📋", layout="wide")
@@ -13,7 +14,7 @@ t = {
         "sidebar_hdr": "Testaustilanne",
         "age_label": "Lapsen ikä:",
         "dist_label": "Testausetäisyys:",
-        "method_label": "Testaustapa:",
+        "method_label": "Testaustapa (Vain kaukonäköön):",
         "method_opts": ["Rivitesti (Standardi)", "Yksittäiset symbolit (Crowding / Ahtausilmiö)"],
         "inf_age": "Alle 2-vuotiaille suositellaan lähitestausta.",
         "near_only": "Lähitesti / Kommunikaatioetäisyys",
@@ -31,7 +32,7 @@ t = {
         "sidebar_hdr": "Testsituation",
         "age_label": "Barnets ålder:",
         "dist_label": "Testavstånd:",
-        "method_label": "Testmetod:",
+        "method_label": "Testmetod (Endast avståndssyn):",
         "method_opts": ["Radtest (Standard)", "Enskilda symboler (Crowding)"],
         "inf_age": "För barn under 2 år rekommenderas närtest.",
         "near_only": "Närtest / Kommunikationsavstånd",
@@ -49,7 +50,7 @@ t = {
         "sidebar_hdr": "Testing Situation",
         "age_label": "Child's age:",
         "dist_label": "Testing distance:",
-        "method_label": "Testing method:",
+        "method_label": "Testing method (Distance only):",
         "method_opts": ["Line test (Standard)", "Single symbols (Crowding)"],
         "inf_age": "Near testing is recommended for children under 2 years.",
         "near_only": "Near test / Communication distance",
@@ -74,15 +75,19 @@ st.sidebar.header(txt["sidebar_hdr"])
 ika_opts = ["0-6 kk", "6-12 kk", "1-2 v", "2.5-3 v", "3-4 v", "4-7 v"]
 ika = st.sidebar.select_slider(txt["age_label"], options=ika_opts)
 
-# Määritetään etäisyysvalinnat
+# Määritetään etäisyys
 if ika in ["0-6 kk", "6-12 kk", "1-2 v"]:
     etaisyys = txt["near_only"]
     st.sidebar.info(txt["inf_age"])
+    tapa = txt["method_opts"][0] # Oletusarvo, ei näytetä valikkoa
 else:
     etaisyys = st.sidebar.radio(txt["dist_label"], [txt["dist_3m"], txt["near_40cm"]])
-
-# Määritetään testaustapa (Rivitesti vs Yksittäiset)
-tapa = st.sidebar.radio(txt["method_label"], txt["method_opts"])
+    
+    # MUOKKAUS: Näytetään testaustapa vain jos etäisyys on kaukonäkö
+    if etaisyys == txt["dist_3m"]:
+        tapa = st.sidebar.radio(txt["method_label"], txt["method_opts"])
+    else:
+        tapa = txt["method_opts"][0] # Lähinäössä oletuksena rivitesti, ei valikkoa
 
 # --- APUFUNKTIO ---
 def nayta_tuote(nimi, koodi, kuvaus, tuote_url, kuva_url):
@@ -96,39 +101,31 @@ def nayta_tuote(nimi, koodi, kuvaus, tuote_url, kuva_url):
         st.link_button(txt["buy_btn"], tuote_url)
 
 st.divider()
-st.subheader(f"{txt['rec_hdr']} {ika} ({etaisyys} / {tapa})")
+st.subheader(f"{txt['rec_hdr']} {ika} ({etaisyys})")
 
-# --- TUOTETIEDOT (Dynaamisesti haetut URLit ja kuvat) ---
-
-# 1. Tuote 253300 (Hila)
+# --- TUOTETIEDOT ---
 URL_253300 = "https://leatest.fi/products/goodlite-253300-paddles-lea-gratings-a-preferential-looking-test-set"
 IMG_253300 = "https://leatest.fi/cdn/shop/files/good-lite-vision-testing-aids-paddles-lea-gratings-a-preferential-looking-test-set-paddles-lea-gratings-a-preferential-looking-test-253300-1197849552.jpg?v=1771344288&width=823"
 
-# 2. Tuote 253500 (Heidi)
 URL_253500 = "https://leatest.fi/products/goodlite-253500-cards-hiding-heidi-low-contrast-face-test-double-sided"
 IMG_253500 = "https://leatest.fi/cdn/shop/files/good-lite-253510-single-sided-hiding-heidi-low-contrast-face-test-253510-31346832310377.jpg?v=1771344291&width=823"
 
-# 3. Tuote 251600 (Palapeli)
 URL_251600 = "https://leatest.fi/products/goodlite-251600-response-panel-lea-symbols-3-d-puzzle-set"
 IMG_251600 = "https://leatest.fi/cdn/shop/files/good-lite-lea-3-d-puzzle-251600-31895201841257.jpg?v=1771344277&width=823"
 
-# 4. Tuote 250800 (Lähikortti)
 URL_250800 = "https://leatest.fi/products/goodlite-250800-cardnear-lea-symbols-near-vision-card-with-cord-16-40cm"
 IMG_250800 = "https://leatest.fi/cdn/shop/files/good-lite-co-lea-symbols-near-vision-card-250800-32461354664041.jpg?v=1772825481&width=823"
 
-# 5. Tuote 250250 (10-rivinen)
 URL_250250 = "https://leatest.fi/products/goodlite-250250-folding-chart-lea-symbols-10-line-black-back-set-10ft-3m"
 IMG_250250 = "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-10-line-distance-charts-250250-31306945167465.jpg?v=1771344268&width=823"
 
-# 6. Tuote 250600 (Yksittäissymbolit)
 URL_250600 = "https://leatest.fi/products/goodlite-250600-flip-book-lea-symbols-single-symbol-book-set-10ft-3m"
 IMG_250600 = "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-single-symbol-book-250600-31306945200233.jpg?v=1771344270&width=823"
 
-# 7. Tuote 250150 (15-rivinen)
 URL_250150 = "https://leatest.fi/products/goodlite-250150-folding-chart-lea-symbols-15-line-black-back-set-10ft-3m"
 IMG_250150 = "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-15-line-distance-chart-250150-31306944938089.jpg?v=1771344265&width=823"
 
-# --- SUOSITUSLOGIIKKA (Korjattu ja suoraviivaistettu) ---
+# --- LOGIIKKA ---
 
 if ika == "0-6 kk":
     nayta_tuote("LEA GRATINGS® – hila-testi", "253300", "Vauvojen ja kehitysvammaisten näöntarkkuuden mittaamiseen.", URL_253300, IMG_253300)
@@ -139,29 +136,16 @@ elif ika == "6-12 kk":
 elif ika == "1-2 v":
     nayta_tuote("LEA SYMBOLS® -palapeli", "251600", "Opeta symbolit leikin kautta ennen varsinaista testausta.", URL_251600, IMG_251600)
 
-elif ika == "2.5-3 v":
+elif ika in ["2.5-3 v", "3-4 v", "4-7 v"]:
     if etaisyys == txt["near_40cm"]:
         nayta_tuote("LEA SYMBOLS® -lähitesti", "250800", "Lähinäön tutkimiseen 40 cm etäisyydeltä.", URL_250800, IMG_250800)
     elif tapa == txt["method_opts"][1]: # Yksittäiset symbolit
         nayta_tuote("LEA SYMBOLS® -yksittäissymbolit (kirja)", "250600", "Suositellaan Crowding-ilmiön tutkimiseen.", URL_250600, IMG_250600)
     else: # Kaukonäkö 3m + Rivitesti
-        nayta_tuote("LEA SYMBOLS® -taulu (10 riviä)", "250250", "10-rivinen taulu kaukoseulontaan 3 metrin etäisyydelle.", URL_250250, IMG_250250)
-
-elif ika == "3-4 v":
-    if etaisyys == txt["near_40cm"]:
-        nayta_tuote("LEA SYMBOLS® -lähitesti", "250800", "Lähinäön tutkimiseen 40 cm etäisyydeltä.", URL_250800, IMG_250800)
-    elif tapa == txt["method_opts"][1]: # Yksittäiset symbolit
-        nayta_tuote("LEA SYMBOLS® -yksittäissymbolit (kirja)", "250600", "Suositellaan Crowding-ilmiön tutkimiseen.", URL_250600, IMG_250600)
-    else: # Kaukonäkö 3m + Rivitesti
-        nayta_tuote("LEA SYMBOLS® -taulu (10 riviä)", "250250", "Standardi 10-rivinen taulu kaukoseulontaan.", URL_250250, IMG_250250)
-
-elif ika == "4-7 v":
-    if etaisyys == txt["near_40cm"]:
-        nayta_tuote("LEA SYMBOLS® -lähitesti", "250800", "Lähinäön tutkimiseen 40 cm etäisyydeltä.", URL_250800, IMG_250800)
-    elif tapa == txt["method_opts"][1]: # Yksittäiset symbolit
-        nayta_tuote("LEA SYMBOLS® -yksittäissymbolit (kirja)", "250600", "Suositellaan Crowding-ilmiön tutkimiseen.", URL_250600, IMG_250600)
-    else: # Kaukonäkö 3m + Rivitesti
-        nayta_tuote("LEA SYMBOLS® -taulu (15 riviä)", "250150", "Tarkempi 15-rivinen taulu vanhemmille lapsille.", URL_250150, IMG_250150)
+        if ika == "4-7 v":
+            nayta_tuote("LEA SYMBOLS® -taulu (15 riviä)", "250150", "Tarkempi 15-rivinen taulu vanhemmille lapsille.", URL_250150, IMG_250150)
+        else:
+            nayta_tuote("LEA SYMBOLS® -taulu (10 riviä)", "250250", "10-rivinen taulu kaukoseulontaan 3 metrin etäisyydelle.", URL_250250, IMG_250250)
 
 st.divider()
 with st.expander(txt["exp_hdr"]):

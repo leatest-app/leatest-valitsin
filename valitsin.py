@@ -2,93 +2,141 @@ import streamlit as st
 
 st.set_page_config(page_title="Lea-testin valitsin", page_icon="📋", layout="wide")
 
-st.title("📋 Lea-testin ammattilaisvalitsin")
-st.write("Valitse lapsen ikä ja kehitystaso löytääksesi oikeat testivälineet. Logiikka perustuu Lea-test.fi ohjeistuksiin.")
+# --- KIELIVALINTA ---
+kieli = st.sidebar.radio("Valitse kieli / Välj språk / Select Language", ["Suomi", "Svenska", "English"])
 
-# --- SIVUPALKKI / KYSYMYKSET ---
-st.sidebar.header("Testaustilanne")
+# --- TEKSTIDATA (Lokalisoitu) ---
+t = {
+    "Suomi": {
+        "title": "📋 Lea-testin ammattilaisvalitsin",
+        "intro": "Löydä oikea testiväline lapsen iän ja kehitystason mukaan.",
+        "sidebar_hdr": "Testaustilanne",
+        "age_label": "Lapsen ikä:",
+        "dist_label": "Testausetäisyys:",
+        "method_label": "Testaustapa:",
+        "method_opts": ["Rivitesti (Standardi)", "Yksittäiset symbolit (Crowding / Ahtausilmiö)"],
+        "inf_age": "Alle 2-vuotiaille suositellaan lähitestausta.",
+        "near_only": "Lähitesti / Kommunikaatioetäisyys",
+        "dist_3m": "Kaukonäkö (3 m)",
+        "near_40cm": "Lähinäkö (40 cm)",
+        "rec_hdr": "Suositus:",
+        "buy_btn": "Katso tuote kaupassa",
+        "code_label": "Tuotekoodi:",
+        "exp_hdr": "ℹ️ Ohjeita testin valintaan",
+        "exp_txt": "Rivitesti on vaativampi. Jos lapsi hukkaa rivin, käytä kehystettyjä yksittäissymboleita. Vauvoille käytetään aina hila-testejä (Grating)."
+    },
+    "Svenska": {
+        "title": "📋 Lea-test väljare",
+        "intro": "Hitta rätt testverktyg baserat på barnets ålder och utvecklingsnivå.",
+        "sidebar_hdr": "Testsituation",
+        "age_label": "Barnets ålder:",
+        "dist_label": "Testavstånd:",
+        "method_label": "Testmetod:",
+        "method_opts": ["Radtest (Standard)", "Enskilda symboler (Crowding)"],
+        "inf_age": "För barn under 2 år rekommenderas närtest.",
+        "near_only": "Närtest / Kommunikationsavstånd",
+        "dist_3m": "Avståndssyn (3 m)",
+        "near_40cm": "Närsyn (40 cm)",
+        "rec_hdr": "Rekommendation:",
+        "buy_btn": "Visa produkten i butiken",
+        "code_label": "Produktkod:",
+        "exp_hdr": "ℹ️ Instruktioner för val av test",
+        "exp_txt": "Radtest är mer krävande. Om barnet tappar raden, använd inramade enskilda symboler."
+    },
+    "English": {
+        "title": "📋 Lea Test Selector",
+        "intro": "Find the right testing tool based on the child's age and developmental level.",
+        "sidebar_hdr": "Testing Situation",
+        "age_label": "Child's age:",
+        "dist_label": "Testing distance:",
+        "method_label": "Testing method:",
+        "method_opts": ["Line test (Standard)", "Single symbols (Crowding)"],
+        "inf_age": "Near testing is recommended for children under 2 years.",
+        "near_only": "Near test / Communication distance",
+        "dist_3m": "Distance vision (3 m)",
+        "near_40cm": "Near vision (40 cm)",
+        "rec_hdr": "Recommendation:",
+        "buy_btn": "View product in store",
+        "code_label": "Product code:",
+        "exp_hdr": "ℹ️ Tips for selection",
+        "exp_txt": "Line tests are more demanding. If the child loses their place, use framed single symbols."
+    }
+}
 
-ika = st.sidebar.select_slider(
-    "Lapsen ikä:",
-    options=["0-6 kk", "6-12 kk", "1-2 v", "2.5-3 v", "3-4 v", "4-7 v"]
-)
+txt = t[kieli]
 
-# Dynaaminen etäisyysvalinta: alle 2v vain lähitesti
+st.title(txt["title"])
+st.write(txt["intro"])
+
+# --- SIVUPALKKI ---
+st.sidebar.header(txt["sidebar_hdr"])
+
+ika_opts = ["0-6 kk", "6-12 kk", "1-2 v", "2.5-3 v", "3-4 v", "4-7 v"]
+ika = st.sidebar.select_slider(txt["age_label"], options=ika_opts)
+
 if ika in ["0-6 kk", "6-12 kk", "1-2 v"]:
-    etaisyys = "Lähitesti / Kommunikaatioetäisyys"
-    st.sidebar.info("Alle 2-vuotiaille suositellaan vain lähitestausta.")
+    etaisyys = txt["near_only"]
+    st.sidebar.info(txt["inf_age"])
 else:
-    etaisyys = st.sidebar.radio("Testausetäisyys:", ["Kaukonäkö (3 m)", "Lähinäkö (40 cm)"])
+    etaisyys = st.sidebar.radio(txt["dist_label"], [txt["dist_3m"], txt["near_40cm"]])
 
-tapa = st.sidebar.radio(
-    "Testaustapa:",
-    ["Rivitesti (Standardi)", "Yksittäiset symbolit (Jos rivitesti on liian vaikea / Crowding)"]
-)
+tapa = st.sidebar.radio(txt["method_label"], txt["method_opts"])
+
+# --- APUFUNKTIO ---
+def nayta_tuote(nimi, koodi, kuvaus, linkki_handle, kuva_url):
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        st.image(kuva_url, use_container_width=True)
+    with c2:
+        st.success(f"### {nimi}")
+        st.write(f"**{txt['code_label']}** #{koodi}")
+        st.write(kuvaus)
+        url = f"https://leatest.fi/products/{linkki_handle}"
+        st.link_button(txt["buy_btn"], url)
 
 st.divider()
+st.subheader(f"{txt['rec_hdr']} {ika} ({etaisyys})")
 
-# --- TUOTEDATA ---
-def tuote_kortti(nimi, koodi, kuvaus, linkki_handle):
-    url = f"https://leatest.fi/products/{linkki_handle}"
-    st.success(f"### {nimi} (Tuotekoodi: #{koodi})")
-    st.write(kuvaus)
-    st.link_button("Katso tuote kaupassa 🛒", url)
-
-# --- SUOSITUSLOGIIKKA ---
-st.subheader(f"Suositeltu testi: {ika} ikäryhmälle")
-
+# --- SUOSITUKSET ---
+# Huom: Päivitä kuva_url ja linkki_handle kauppasi mukaan
 if ika == "0-6 kk":
-    tuote_kortti(
-        "Lea Grating Paddles -hila-testi", "253300",
-        "Vauvojen näöntarkkuuden mittaamiseen hila-testillä. Seurataan lapsen katselusuunnan kohdistumista raitakuvioon.",
-        "goodlite-253300-paddles-lea-gratings-a-preferential-looking-test"
+    nayta_tuote(
+        "LEA GRATINGS® – näöntarkkuustesti – mela-setti", "253300",
+        "Vauvojen ja kehitysvammaisten näöntarkkuuden mittaamiseen hila-testillä.",
+        "lea-gratings-naontarkkuustesti-mela-setti", # KORJATTU LINKKI
+        "https://leatest.fi/cdn/shop/files/253300_1_800x.jpg" # Esimerkkikuva
     )
-    st.info("💡 **Lisäksi suositellaan:** Hiding Heidi -kontrastitesti (#253500) viestintäetäisyyden arviointiin.")
 
 elif ika == "6-12 kk":
-    tuote_kortti(
-        "Hiding Heidi -kontrastikasvotesti", "253500",
-        "Matalan kontrastin tunnistaminen on tärkeää viestinnän kehityksen kannalta. Auttaa arvioimaan, miltä etäisyydeltä lapsi näkee kasvot.",
-        "goodlite-253500-cards-hiding-heidi-low-contrast-face-test-double-sided"
+    nayta_tuote(
+        "Hiding Heidi – matalan kontrastin testi", "253500",
+        "Arvioi viestintäetäisyyden ja kasvojen tunnistamisen matalalla kontrastilla.",
+        "hiding-heidi-matalan-kontrastin-testi",
+        "https://leatest.fi/cdn/shop/files/253500_1_800x.jpg"
     )
 
 elif ika == "1-2 v":
-    tuote_kortti(
-        "Lea Symbols -palapeli (3D)", "251600",
-        "Ennen varsinaista testausta lapsen on opittava tunnistamaan symbolit. Palapeli on paras tapa tähän kehitysvaiheeseen.",
-        "goodlite-251600-good-lite-lea-3d-puzzle-with-symbol-shapes"
+    nayta_tuote(
+        "LEA SYMBOLS® -palapeli", "251600",
+        "Opeta symbolit leikin kautta ennen varsinaista testausta.",
+        "lea-symbols-palapeli",
+        "https://leatest.fi/cdn/shop/files/251600_1_800x.jpg"
     )
 
 elif ika == "2.5-3 v":
-    if etaisyys == "Lähinäkö (40 cm)":
-        tuote_kortti("Lea Symbols -lähitesti johdolla", "250800", "Standardi lähitesti 40 cm etäisyydelle.", "goodlite-250800-cardnear-lea-symbols-near-vision-card-16-40cm")
+    if etaisyys == txt["near_40cm"]:
+        nayta_tuote("LEA SYMBOLS® -lähitesti", "250800", "Lähinäön tutkimiseen 40 cm etäisyydeltä.", "lea-symbols-lahitesti", "https://leatest.fi/cdn/shop/files/250800_1_800x.jpg")
     else:
-        tuote_kortti("Lea Symbols -kaukonäkötaulu (10 riviä)", "250250", "Pienemmille lapsille soveltuva selkeämpi 10 rivin taulu 3 metrin etäisyydelle.", "goodlite-250250-folding-chart-lea-symbols-distance-vision-screener-10ft-3m")
+        nayta_tuote("LEA SYMBOLS® -taulu (3 m)", "250250", "10-rivinen taulu kaukoseulontaan.", "lea-symbols-taulu-3m-10-rivia", "https://leatest.fi/cdn/shop/files/250250_1_800x.jpg")
 
 elif ika in ["3-4 v", "4-7 v"]:
-    if tapa == "Yksittäiset symbolit (Jos rivitesti on liian vaikea / Crowding)":
-        tuote_kortti(
-            "Lea Symbols -yksittäissymbolien testikirja", "250600",
-            "Käytetään, jos lapsella on ahtausilmiöstä (crowding) johtuvia vaikeuksia rivitestissä. Sisältää kehystetyt symbolit.",
-            "goodlite-250600-flip-book-lea-symbols-single-symbol-book-set-10ft-3m"
-        )
+    if tapa == txt["method_opts"][1]: # Yksittäiset symbolit
+        nayta_tuote("LEA SYMBOLS® -yksittäissymbolit (kirja)", "250600", "Kehystetyt symbolit lapsille, joilla on ahtausilmiö (crowding).", "lea-symbols-yksittaissymbolit-testikirja", "https://leatest.fi/cdn/shop/files/250600_1_800x.jpg")
     else:
-        if ika == "3-4 v":
-            tuote_kortti("Lea Symbols -kaukonäkötaulu (10 riviä)", "250250", "Standardi seulonta 3 metrin etäisyydeltä.", "goodlite-250250-folding-chart-lea-symbols-distance-vision-screener-10ft-3m")
-        else:
-            tuote_kortti("Lea Symbols -kaukonäkötaulu (15 riviä)", "250150", "Tarkempi seulontataulu vanhemmille lapsille 3 metrin etäisyydelle.", "goodlite-250150-folding-chart-lea-symbols-distance-chart-10ft-3m")
+        koodi = "250250" if ika == "3-4 v" else "250150"
+        handle = "lea-symbols-taulu-3m-10-rivia" if ika == "3-4 v" else "lea-symbols-taulu-3m-15-rivia"
+        nayta_tuote(f"LEA SYMBOLS® -taulu ({koodi})", koodi, "Standardi seulontataulu kaukonäön tutkimiseen.", handle, f"https://leatest.fi/cdn/shop/files/{koodi}_1_800x.jpg")
 
 st.divider()
-
-# --- NÄÖN KEHITYS 0-7 VUOTTA ---
-with st.expander("ℹ️ Lapsen näön kehityksen virstanpylväät (0-7 v.)"):
-    st.write("""
-    * **0–6 kk:** Preferential looking -menetelmä. Vauva seuraa suurikontrastisia kuvioita.
-    * **6–12 kk:** Sosiaalinen hymy ja kasvojen tunnistus matalalla kontrastilla (Hiding Heidi).
-    * **1–2 v:** Opitaan symbolien muodot (Ympyrä, neliö, talo, omena) palapelin avulla.
-    * **2,5–3 v:** Lähinäön testaaminen onnistuu usein ensin. Kaukoseulonta voidaan aloittaa.
-    * **3–4 v:** Kriittinen seulontaikä. Crowding-ilmiö (ahtaus) voi vaikeuttaa rivitestiä.
-    * **4–7 v:** Näöntarkkuus lähestyy aikuisten tasoa. Testataan standardiriveillä.
-    """)
-
-st.caption("Päivitetty logiikka 2024. Kaikki tuotteet ovat alkuperäisiä Lea-testejä (Good-Lite).")
+with st.expander(txt["exp_hdr"]):
+    st.write(txt["exp_txt"])

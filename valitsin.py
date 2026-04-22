@@ -1,16 +1,70 @@
-
 import streamlit as st
 
+# 1. Sivun perusasetukset
 st.set_page_config(page_title="Lea-testin valitsin", page_icon="📋", layout="wide")
 
-# --- KIELIVALINTA ---
-kieli = st.sidebar.radio("Valitse kieli / Välj språk / Select Language", ["Suomi", "Svenska", "English"])
+# 2. Tyylittely (CSS) - Tuodaan leatest.fi brändi ja visuaalinen ryhti
+st.markdown("""
+    <style>
+    /* Tausta ja fontit */
+    .stApp {
+        background-color: #f9f9f9;
+    }
+    
+    /* Otsikkopalkki (Hero-osio) */
+    .header-container {
+        background-color: #ffffff;
+        padding: 35px;
+        border-radius: 15px;
+        border-left: 12px solid #2e7d32; /* Leatestin vihreä */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+    
+    .header-title {
+        color: #2e7d32;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+    
+    .header-subtitle {
+        color: #555555;
+        font-size: 1.1rem;
+        line-height: 1.4;
+    }
 
-# --- TEKSTIDATA (Lokalisoitu) ---
+    /* Sivupalkin tyylittely */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #eeeeee;
+    }
+    
+    /* Tuotekortin Success-laatikon muokkaus */
+    .stAlert {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Nappulan tyyli */
+    .stButton>button {
+        background-color: #2e7d32;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 3. Kielitiedot
 t = {
     "Suomi": {
-        "title": "📋 Lea-testin ammattilaisvalitsin",
-        "intro": "Löydä oikea testiväline lapsen iän ja kehitystason mukaan.",
+        "title": "Lea-testin ammattilaisvalitsin",
+        "intro": "Löydä oikea testiväline lapsen iän ja kehitystason mukaan. Työkalu on suunniteltu terveydenhuollon ammattilaisten työn tueksi.",
         "sidebar_hdr": "Testaustilanne",
         "age_label": "Lapsen ikä:",
         "dist_label": "Testausetäisyys:",
@@ -27,8 +81,8 @@ t = {
         "exp_txt": "Rivitesti on vaativampi. Jos lapsi hukkaa rivin, käytä kehystettyjä yksittäissymboleita. Vauvoille käytetään aina hila-testejä (Grating)."
     },
     "Svenska": {
-        "title": "📋 Lea-test väljare",
-        "intro": "Hitta rätt testverktyg baserat på barnets ålder och utvecklingsnivå.",
+        "title": "Lea-test väljare",
+        "intro": "Hitta rätt testverktyg baserat på barnets ålder och utvecklingsnivå. Designad för hälso- och sjukvårdspersonal.",
         "sidebar_hdr": "Testsituation",
         "age_label": "Barnets ålder:",
         "dist_label": "Testavstånd:",
@@ -45,8 +99,8 @@ t = {
         "exp_txt": "Radtest är mer krävande. Om barnet tappar raden, använd inramade enskilda symboler."
     },
     "English": {
-        "title": "📋 Lea Test Selector",
-        "intro": "Find the right testing tool based on the child's age and developmental level.",
+        "title": "Lea Test Selector",
+        "intro": "Find the right testing tool based on the child's age and developmental level. Designed for healthcare professionals.",
         "sidebar_hdr": "Testing Situation",
         "age_label": "Child's age:",
         "dist_label": "Testing distance:",
@@ -64,37 +118,44 @@ t = {
     }
 }
 
+# 4. Kielivalinta sivupalkissa
+kieli = st.sidebar.radio("Valitse kieli / Välj språk / Select Language", ["Suomi", "Svenska", "English"])
 txt = t[kieli]
 
-st.title(txt["title"])
-st.write(txt["intro"])
+# 5. Visuaalinen Hero-osio (Header)
+st.markdown(f"""
+    <div class="header-container">
+        <div class="header-title">{txt['title']}</div>
+        <div class="header-subtitle">{txt['intro']}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- SIVUPALKKI ---
+# 6. Sivupalkin valinnat
 st.sidebar.header(txt["sidebar_hdr"])
 
 ika_opts = ["0-6 kk", "6-12 kk", "1-2 v", "2.5-3 v", "3-4 v", "4-7 v"]
 ika = st.sidebar.select_slider(txt["age_label"], options=ika_opts)
 
-# Määritetään etäisyys
+# Dynaamiset valikot: piilotetaan turhat kerralla
 if ika in ["0-6 kk", "6-12 kk", "1-2 v"]:
     etaisyys = txt["near_only"]
     st.sidebar.info(txt["inf_age"])
-    tapa = txt["method_opts"][0] # Oletusarvo, ei näytetä valikkoa
+    tapa = txt["method_opts"][0] # Oletus, ei näytetä
 else:
     etaisyys = st.sidebar.radio(txt["dist_label"], [txt["dist_3m"], txt["near_40cm"]])
     
-    # MUOKKAUS: Näytetään testaustapa vain jos etäisyys on kaukonäkö
+    # Näytetään testaustapa VAIN jos on kaukonäkö
     if etaisyys == txt["dist_3m"]:
         tapa = st.sidebar.radio(txt["method_label"], txt["method_opts"])
     else:
-        tapa = txt["method_opts"][0] # Lähinäössä oletuksena rivitesti, ei valikkoa
+        tapa = txt["method_opts"][0] # Lähinäössä oletuksena standardi, ei näytetä valikkoa
 
-# --- APUFUNKTIO ---
+# 7. Apufunktio tuotteen näyttämiseen
 def nayta_tuote(nimi, koodi, kuvaus, tuote_url, kuva_url):
-    c1, c2 = st.columns([1, 2])
-    with c1:
+    col1, col2 = st.columns([1, 2])
+    with col1:
         st.image(kuva_url, use_container_width=True)
-    with c2:
+    with col2:
         st.success(f"### {nimi}")
         st.write(f"**{txt['code_label']}** #{koodi}")
         st.write(kuvaus)
@@ -103,7 +164,7 @@ def nayta_tuote(nimi, koodi, kuvaus, tuote_url, kuva_url):
 st.divider()
 st.subheader(f"{txt['rec_hdr']} {ika} ({etaisyys})")
 
-# --- TUOTETIEDOT ---
+# 8. Tuotteiden URL-osoitteet ja kuvat
 URL_253300 = "https://leatest.fi/products/goodlite-253300-paddles-lea-gratings-a-preferential-looking-test-set"
 IMG_253300 = "https://leatest.fi/cdn/shop/files/good-lite-vision-testing-aids-paddles-lea-gratings-a-preferential-looking-test-set-paddles-lea-gratings-a-preferential-looking-test-253300-1197849552.jpg?v=1771344288&width=823"
 
@@ -125,30 +186,30 @@ IMG_250600 = "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-si
 URL_250150 = "https://leatest.fi/products/goodlite-250150-folding-chart-lea-symbols-15-line-black-back-set-10ft-3m"
 IMG_250150 = "https://leatest.fi/cdn/shop/files/good-lite-lea-symbols-sup-sup-15-line-distance-chart-250150-31306944938089.jpg?v=1771344265&width=823"
 
-# --- LOGIIKKA ---
-
+# 9. Logiikka suosituksille
 if ika == "0-6 kk":
-    nayta_tuote("LEA GRATINGS® – hila-testi", "253300", "Vauvojen ja kehitysvammaisten näöntarkkuuden mittaamiseen.", URL_253300, IMG_253300)
+    nayta_tuote("LEA GRATINGS® – hila-testi", "253300", "Vauvojen ja kehitysvammaisten näöntarkkuuden mittaamiseen hila-testillä. Seurataan lapsen katselusuunnan kohdistumista.", URL_253300, IMG_253300)
 
 elif ika == "6-12 kk":
-    nayta_tuote("Hiding Heidi – matalan kontrastin testi", "253500", "Viestintäetäisyyden ja kasvojen tunnistamisen arviointiin.", URL_253500, IMG_253500)
+    nayta_tuote("Hiding Heidi – matalan kontrastin testi", "253500", "Arvioi viestintäetäisyyden ja kasvojen tunnistamisen matalalla kontrastilla. Tärkeä viestinnän kehityksen arviointiin.", URL_253500, IMG_253500)
 
 elif ika == "1-2 v":
-    nayta_tuote("LEA SYMBOLS® -palapeli", "251600", "Opeta symbolit leikin kautta ennen varsinaista testausta.", URL_251600, IMG_251600)
+    nayta_tuote("LEA SYMBOLS® -palapeli", "251600", "Opeta symbolit (ympyrä, neliö, omena, talo) leikin kautta ennen varsinaista testausta. Paras tapa hahmotuksen harjoitteluun.", URL_251600, IMG_251600)
 
 elif ika in ["2.5-3 v", "3-4 v", "4-7 v"]:
     if etaisyys == txt["near_40cm"]:
-        nayta_tuote("LEA SYMBOLS® -lähitesti", "250800", "Lähinäön tutkimiseen 40 cm etäisyydeltä.", URL_250800, IMG_250800)
-    elif tapa == txt["method_opts"][1]: # Yksittäiset symbolit
-        nayta_tuote("LEA SYMBOLS® -yksittäissymbolit (kirja)", "250600", "Suositellaan Crowding-ilmiön tutkimiseen.", URL_250600, IMG_250600)
+        nayta_tuote("LEA SYMBOLS® -lähitesti johdolla", "250800", "Standardi lähitesti 40 cm etäisyydelle lapsille. Auttaa arvioimaan lähityöskentelyä ja lukunäköä.", URL_250800, IMG_250800)
+    elif tapa == txt["method_opts"][1]: # Yksittäiset symbolit (Crowding)
+        nayta_tuote("LEA SYMBOLS® -yksittäissymbolikirja", "250600", "Suositellaan lapsille, joilla on ahtausilmiöstä (crowding) johtuvia vaikeuksia rivitestissä. Sisältää kehystetyt symbolit.", URL_250600, IMG_250600)
     else: # Kaukonäkö 3m + Rivitesti
         if ika == "4-7 v":
-            nayta_tuote("LEA SYMBOLS® -taulu (15 riviä)", "250150", "Tarkempi 15-rivinen taulu vanhemmille lapsille.", URL_250150, IMG_250150)
+            nayta_tuote("LEA SYMBOLS® -taulu (15 riviä)", "250150", "Tarkempi 15-rivinen taulu kaukoseulontaan 3 metrin etäisyydelle vanhemmille lapsille.", URL_250150, IMG_250150)
         else:
-            nayta_tuote("LEA SYMBOLS® -taulu (10 riviä)", "250250", "10-rivinen taulu kaukoseulontaan 3 metrin etäisyydelle.", URL_250250, IMG_250250)
+            nayta_tuote("LEA SYMBOLS® -taulu (10 riviä)", "250250", "Suosittu 10-rivinen taulu kaukoseulontaan 3 metrin etäisyydelle pienille lapsille.", URL_250250, IMG_250250)
 
+# 10. Alaviite ja ohjeet
 st.divider()
 with st.expander(txt["exp_hdr"]):
     st.write(txt["exp_txt"])
 
-st.caption("Päivitetty logiikka 2026. Leatest.fi")
+st.caption("Leatest.fi - Ammattitason näönseulontavälineet. Päivitetty 2026.")
